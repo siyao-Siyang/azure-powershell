@@ -20,6 +20,18 @@
 
 ## Upcoming Release
 
+## Version 3.1.1
+* Customized output property for `Get-AzCdnEdgeNode` command
+
+## Version 3.1.0
+* Upgraded API version to 2023-05-01
+* Fixed known issue for `Update-AzCdnProfile`, `Update-AzFrontDoorCdnProfile`, `Remove-AzCdnProfile`, `Remove-AzCdnProfile`
+
+## Version 3.0.0
+* Upgraded API version to 2022-11-01-preview
+* Added support to migrate from Azure Front Door (classic) to Azure Front Door Standard and Premium.
+* Added support for AFDX upgrade from Standard tier to Premium tier.
+
 ## Version 2.1.0
 * Upgraded API version to 2021-06-01
 * Removed deprecated cmdlets
@@ -41,6 +53,7 @@
   - Update-AzFrontDoorCdnCustomDomainValidationToken
   - Update-AzFrontDoorCdnRule
 * Renamed Set cmdlets to Update cmdlets
+* Renamed `Unpublish-AzCdnEndpointContent` cmdlets to `Clear-AzCdnEndpointContent`
 * Added `Object` suffix to memory object creation cmdlets
 
 ## Version 1.8.3

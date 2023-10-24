@@ -110,7 +110,8 @@ namespace Microsoft.Azure.Commands.Sql.ElasticPool.Services
                 },
                 LicenseType = model.LicenseType,
                 MaintenanceConfigurationId = MaintenanceConfigurationHelper.ConvertMaintenanceConfigurationIdArgument(model.MaintenanceConfigurationId, Context.Subscription.Id),
-                HighAvailabilityReplicaCount = model.HighAvailabilityReplicaCount
+                HighAvailabilityReplicaCount = model.HighAvailabilityReplicaCount,
+                PreferredEnclaveType = model.PreferredEnclaveType
             }); ;
 
             return CreateElasticPoolModelFromResponse(model.ResourceGroupName, model.ServerName, resp);
@@ -143,7 +144,8 @@ namespace Microsoft.Azure.Commands.Sql.ElasticPool.Services
                 },
                 LicenseType = model.LicenseType,
                 MaintenanceConfigurationId = MaintenanceConfigurationHelper.ConvertMaintenanceConfigurationIdArgument(model.MaintenanceConfigurationId, Context.Subscription.Id),
-                HighAvailabilityReplicaCount = model.HighAvailabilityReplicaCount
+                HighAvailabilityReplicaCount = model.HighAvailabilityReplicaCount,
+                PreferredEnclaveType = model.PreferredEnclaveType
             });
 
             return CreateElasticPoolModelFromResponse(model.ResourceGroupName, model.ServerName, resp);
@@ -231,7 +233,7 @@ namespace Microsoft.Azure.Commands.Sql.ElasticPool.Services
                            requestedDatabaseDtuMin = activity.RequestedDatabaseDtuMin,
                            requestedDtu = activity.RequestedDtu,
                            requestedElasticPoolName = activity.RequestedElasticPoolName,
-                           requestedStorageLimitInGB = activity.RequestedStorageLimitInGB,
+                           requestedStorageLimitInGB = activity.RequestedStorageLimitInGb,
                            serverName = activity.ServerName,
                            startTime = activity.StartTime,
                            state = activity.State,
@@ -357,7 +359,7 @@ namespace Microsoft.Azure.Commands.Sql.ElasticPool.Services
                 RequestedDatabaseDtuMin = model.RequestedDatabaseDtuMin,
                 RequestedDtu = model.RequestedDtu,
                 RequestedElasticPoolName = model.RequestedElasticPoolName,
-                RequestedStorageLimitInGB = model.RequestedStorageLimitInGB,
+                RequestedStorageLimitInGB = model.RequestedStorageLimitInGb,
                 ServerName = model.ServerName,
                 StartTime = model.StartTime,
                 State = model.State

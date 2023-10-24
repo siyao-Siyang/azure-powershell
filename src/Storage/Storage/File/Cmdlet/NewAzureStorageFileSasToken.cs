@@ -1,4 +1,4 @@
-﻿// ----------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------
 //
 // Copyright Microsoft Corporation
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@ using Azure.Storage.Files.Shares;
 using Azure.Storage.Files.Shares.Models;
 using Azure.Storage.Sas;
 using Microsoft.WindowsAzure.Commands.Common.Storage.ResourceModel;
+using Microsoft.WindowsAzure.Commands.Common.CustomAttributes;
 
 namespace Microsoft.WindowsAzure.Commands.Storage.File.Cmdlet
 {
@@ -181,6 +182,12 @@ namespace Microsoft.WindowsAzure.Commands.Storage.File.Cmdlet
                 fileClient = shareClient.GetRootDirectoryClient().GetFileClient(this.Path);
             }
 
+
+            if (this.Context != null && this.Context is AzureStorageContext && ((AzureStorageContext)this.Context).StorageAccount != null && !((AzureStorageContext)this.Context).StorageAccount.Credentials.IsSharedKey)
+            {
+                throw new InvalidOperationException("Create File service SAS only supported with SharedKey credentail.");
+            }
+
             // Get share saved policy if any
             ShareSignedIdentifier identifier = null;
             if (!string.IsNullOrEmpty(this.Policy))
@@ -193,10 +200,9 @@ namespace Microsoft.WindowsAzure.Commands.Storage.File.Cmdlet
 
             //Create SAS and output it
             string sasToken = SasTokenHelper.GetFileSharedAccessSignature((AzureStorageContext)this.Context, sasBuilder, CmdletCancellationToken);
-            if (sasToken[0] != '?')
-            {
-                sasToken = "?" + sasToken;
-            }
+
+            // remove prefix "?" of SAS if any
+            sasToken = Util.GetSASStringWithoutQuestionMark(sasToken);
 
             if (FullUri)
             {

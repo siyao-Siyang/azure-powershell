@@ -934,7 +934,7 @@ function Test-SetWebApp
 		Assert-Null $webApp.Identity
 		Assert-NotNull $webApp.SiteConfig.phpVersion
 		Assert-AreEqual $false $webApp.HttpsOnly
-		Assert-AreEqual "AllAllowed" $webApp.SiteConfig.FtpsState
+		Assert-AreEqual "FtpsOnly" $webApp.SiteConfig.FtpsState
 		
 		# Change service plan & set site properties
 		$job = Set-AzWebApp -ResourceGroupName $rgname -Name $webAppName -AppServicePlan $appServicePlanName2 -HttpsOnly $true -AlwaysOn $false -AsJob
@@ -952,7 +952,7 @@ function Test-SetWebApp
 		# Set config properties
 		$webapp.SiteConfig.HttpLoggingEnabled = $true
 		$webapp.SiteConfig.RequestTracingEnabled = $true
-		$webapp.SiteConfig.FtpsState = "FtpsOnly"
+		$webapp.SiteConfig.FtpsState = "AllAllowed"
 		$webApp.SiteConfig.MinTlsVersion = "1.0"
 		$webApp.SiteConfig.HealthCheckPath = "/api/path"
 
@@ -967,7 +967,7 @@ function Test-SetWebApp
 		Assert-AreEqual $true $webApp.SiteConfig.HttpLoggingEnabled
 		Assert-AreEqual $true $webApp.SiteConfig.RequestTracingEnabled
 		Assert-AreEqual $false $webApp.SiteConfig.AlwaysOn
-		Assert-AreEqual "FtpsOnly" $webApp.SiteConfig.FtpsState
+		Assert-AreEqual "AllAllowed" $webApp.SiteConfig.FtpsState
 		Assert-AreEqual "1.0" $webApp.SiteConfig.MinTlsVersion
 		Assert-AreEqual "/api/path" $webApp.SiteConfig.HealthCheckPath
 		 
@@ -1274,7 +1274,7 @@ function Test-PublishAzureWebAppOnedeploy
         New-AzResource -PropertyObject $PropertiesObject -ResourceGroupName $rgname -ResourceType Microsoft.Web/sites/config -ResourceName "$appName/web" -ApiVersion 2018-02-01 -Force
 
 		$warPath = Join-Path $ResourcesPath "HelloJava.war"
-		$publishedApp = Publish-AzWebApp -ResourceGroupName $rgname -Name $appName -ArchivePath $warPath -Type war -Clean $true -TargetPath /home/site/wwwroot/webapps/ROOT -Force
+		$publishedApp = Publish-AzWebApp -ResourceGroupName:$rgname -Name:$appName -ArchivePath:$warPath -Type:war -Clean:$true -TargetPath:/home/site/wwwroot/webapps/ROOT -Force
 
 		Assert-NotNull $publishedApp
 	}

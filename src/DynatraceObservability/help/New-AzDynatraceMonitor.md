@@ -92,7 +92,8 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultProfile
-The credentials, account, tenant, and subscription used for communication with Azure.
+The DefaultProfile parameter is not functional.
+Use the SubscriptionId parameter when available if executing the cmdlet against a different subscription.
 
 ```yaml
 Type: System.Management.Automation.PSObject
@@ -350,7 +351,7 @@ Accept wildcard characters: False
 ```
 
 ### -SingleSignOnAadDomain
-array of Aad(azure active directory) domains
+array of Microsoft Entra domains
 
 ```yaml
 Type: System.String[]
@@ -574,4 +575,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ALIASES
 
 ## RELATED LINKS
-

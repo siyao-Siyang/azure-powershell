@@ -50,11 +50,11 @@ namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.Implementation
                 TemplateFile = TemplateUri ?? this.TryResolvePath(TemplateFile),
                 TemplateObject = TemplateObject,
                 QueryString = QueryString,
-                TemplateParameterObject = GetTemplateParameterObject(TemplateParameterObject),
+                TemplateParameterObject = GetTemplateParameterObject(),
                 ParameterUri = TemplateParameterUri
             };
 
-            WriteObject(ResourceManagerSdkClient.ValidateDeployment(parameters));
+            WriteObject(NewResourceManagerSdkClient.ValidateDeployment(parameters));
         }
     }
 }

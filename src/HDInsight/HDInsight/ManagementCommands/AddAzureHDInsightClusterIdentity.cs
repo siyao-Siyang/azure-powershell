@@ -14,11 +14,15 @@
 
 using Microsoft.Azure.Commands.HDInsight.Commands;
 using Microsoft.Azure.Commands.HDInsight.Models;
+using Microsoft.WindowsAzure.Commands.Common.CustomAttributes;
 using System;
 using System.Management.Automation;
 
 namespace Microsoft.Azure.Commands.HDInsight.ManagementCommands
 {
+    [CmdletOutputBreakingChangeWithVersion(typeof(AzureHDInsightConfig), Constants.deprecateByAzVersion, Constants.deprecateByVersion, 
+        DeprecatedOutputProperties = new string[] {"Dictionary<ClusterNodeType, List<AzureHDInsightScriptAction>> ScriptActions"}, 
+        NewOutputProperties = new string[] {"Dictionary<RuntimeScriptActionClusterNodeType, List<AzureHDInsightScriptAction>> ScriptActions"})]
     [Cmdlet("Add", ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "HDInsightClusterIdentity",DefaultParameterSetName = CertificateFilePathSet),OutputType(typeof(AzureHDInsightConfig))]
     public class AddAzureHDInsightClusterIdentity : HDInsightCmdletBase
     {
@@ -58,7 +62,7 @@ namespace Microsoft.Azure.Commands.HDInsight.ManagementCommands
 
         [Parameter(Position = 4,
             Mandatory = false,
-            HelpMessage = "The Service Principal AAD Tenant Id for accessing Azure Data Lake.")]
+            HelpMessage = "The Service Principal Microsoft Entra Tenant Id for accessing Azure Data Lake.")]
         public Guid AadTenantId { get; set; }
 
         [Parameter(Position = 5,

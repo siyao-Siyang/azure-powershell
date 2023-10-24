@@ -61,7 +61,7 @@ Set-AzSqlServer -AssignIdentity -ResourceGroupName 'ResourceGroup01' -ServerName
 ## PARAMETERS
 
 ### -AssignIdentity
-Generate and assign an Azure Active Directory Identity for this server for use with key management services like Azure KeyVault.
+Generate and assign a Microsoft Entra identity for this server for use with key management services like Azure KeyVault.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
@@ -157,7 +157,7 @@ The minimal TLS version to enforce for Sql Server
 Type: System.String
 Parameter Sets: (All)
 Aliases:
-Accepted values: 1.0, 1.1, 1.2
+Accepted values: None, 1.0, 1.1, 1.2
 
 Required: False
 Position: Named

@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.Implementation
     using Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels;
     using Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels.Deployments;
     using Microsoft.Azure.Commands.ResourceManager.Common.ArgumentCompleters;
-    using Microsoft.Azure.Management.ResourceManager.Models;
+    using Microsoft.Azure.Management.Resources.Models;
     using Microsoft.WindowsAzure.Commands.Utilities.Common;
 
     /// <summary>
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.Implementation
             typeof(NewAzureResourceGroupDeploymentCmdlet),
             typeof(CmdletAttribute))).ConfirmImpact;
 
-        protected override PSDeploymentCmdletParameters DeploymentParameters => new PSDeploymentCmdletParameters
+        protected override PSDeploymentCmdletParameters BuildDeploymentParameters() => new PSDeploymentCmdletParameters
         {
             ScopeType = DeploymentScopeType.ResourceGroup,
             ResourceGroupName = ResourceGroupName,
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.Implementation
             TemplateObject = TemplateObject,
             TemplateSpecId = TemplateSpecId,
             QueryString = QueryString,
-            TemplateParameterObject = GetTemplateParameterObject(TemplateParameterObject),
+            TemplateParameterObject = GetTemplateParameterObject(),
             ParameterUri = TemplateParameterUri,
             DeploymentDebugLogLevel = GetDeploymentDebugLogLevel(DeploymentDebugLogLevel),
             Tags = TagsHelper.ConvertToTagsDictionary(Tag),
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.Implementation
                 : null
         };
 
-        protected override PSDeploymentWhatIfCmdletParameters WhatIfParameters => new PSDeploymentWhatIfCmdletParameters(
+        protected override PSDeploymentWhatIfCmdletParameters BuildWhatIfParameters() => new PSDeploymentWhatIfCmdletParameters(
             DeploymentScopeType.ResourceGroup,
             deploymentName: this.Name,
             mode: this.Mode,
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.Implementation
             templateObject: this.TemplateObject,
             templateSpecId: TemplateSpecId,
             templateParametersUri: this.TemplateParameterUri,
-            templateParametersObject: this.GetTemplateParameterObject(this.TemplateParameterObject),
+            templateParametersObject: this.GetTemplateParameterObject(),
             resultFormat: this.WhatIfResultFormat,
             excludeChangeTypes: this.WhatIfExcludeChangeType); 
 

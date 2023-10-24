@@ -23,8 +23,10 @@ Start-AzDataProtectionBackupInstanceRestore -BackupInstanceName <String> -Resour
 ```
 Start-AzDataProtectionBackupInstanceRestore -BackupInstanceName <String> -ResourceGroupName <String>
  -VaultName <String> -ObjectType <String> -RestoreTargetInfo <IRestoreTargetInfoBase>
- -SourceDataStoreType <SourceDataStoreType> [-SubscriptionId <String>] [-SourceResourceId <String>]
- [-DefaultProfile <PSObject>] [-AsJob] [-NoWait] [-Confirm] [-WhatIf] [<CommonParameters>]
+ -SourceDataStoreType <SourceDataStoreType> [-SubscriptionId <String>]
+ [-IdentityDetailUserAssignedIdentityArmUrl <String>] [-IdentityDetailUseSystemAssignedIdentity]
+ [-SourceResourceId <String>] [-DefaultProfile <PSObject>] [-AsJob] [-NoWait] [-Confirm] [-WhatIf]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -66,7 +68,7 @@ The fourth command initializes the secret URI.
 The fifth, sixth command initializes and triggers the restore request for AzureDatabaseForPostgreSQL with secret store.
 The seventh, eight, ninth  commands track the restore job to completion.
 
-### Example 3: Trigger restore as Files for protected AzureDatabaseForPostgreSQL.
+### Example 3: Trigger restore as files for protected AzureDatabaseForPostgreSQL.
 ```powershell
 $instance = Get-AzDataProtectionBackupInstance -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName"
 $rp = Get-AzDataProtectionRecoveryPoint -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName" -BackupInstanceName $instance.Name
@@ -106,9 +108,71 @@ $restoreJob = Start-AzDataProtectionBackupInstanceRestore -SubscriptionId "xxxxx
 The first, second commands fetch the instance and recovery point for the instance.
 The third command initializes the Restore Configuration client object used to initialize restore request client object.
 The fourth command initializes the snapshot resource group Id.
-The fifth initializes the restore request object for AzureKubernetesService restore.
+The fifth command initializes the restore request object for AzureKubernetesService restore.
 The sixth command assigns the permissions to the backup vault and target AKS cluster necessary for triggering the restore for AzureKubernetesService.
 The last command triggers the restore for AzureKubernetesService.
+
+### Example 5: Trigger restore for vaulted blobs.
+```powershell
+$instance = Get-AzDataProtectionBackupInstance -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName" | Where { $_.Name -match "storageAcountName" }
+$rp = Get-AzDataProtectionRecoveryPoint -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName" -BackupInstanceName $instance.Name
+$backedUpContainers = $instance.Property.PolicyInfo.PolicyParameter.BackupDatasourceParametersList[0].ContainersList
+$restoreReq = Initialize-AzDataProtectionRestoreRequest -DatasourceType AzureBlob -SourceDataStore VaultStore -RestoreLocation "vaultLocation" -RecoveryPoint $rp[0].Name -ItemLevelRecovery -RestoreType AlternateLocation -TargetResourceId "targetStorageAccountId" -ContainersList $backedUpContainers[0,1]
+Test-AzDataProtectionBackupInstanceRestore -Name $instance[0].Name -ResourceGroupName "resourceGroupName" -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -VaultName "vaultName" -RestoreRequest $restoreReq
+$restoreJob = Start-AzDataProtectionBackupInstanceRestore -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName" -BackupInstanceName $instance.BackupInstanceName -Parameter $restoreReq
+```
+
+The first, second commands fetch the instance and recovery point for the instance.
+The third command fetches the containers which are protected with vaulted policy.
+The fourth command initializes the restore request object for AzureBlob restore.
+The fifth command triggers validate before restore.
+The last command triggers the restore for vaulted blob containers.
+
+### Example 6: Trigger cross subscription restore for vaulted blobs.
+```powershell
+$instance = Get-AzDataProtectionBackupInstance -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName" | Where { $_.Name -match "storageAcountName" }
+$rp = Get-AzDataProtectionRecoveryPoint -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName" -BackupInstanceName $instance.Name
+$backedUpContainers = $instance.Property.PolicyInfo.PolicyParameter.BackupDatasourceParametersList[0].ContainersList
+$targetCrossSubscriptionStorageAccountId = "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/resourceGroupName/providers/Microsoft.Storage/storageAccounts/targetStorageAccount"
+$restoreReqCSR = Initialize-AzDataProtectionRestoreRequest -DatasourceType AzureBlob -SourceDataStore VaultStore -RestoreLocation "vaultLocation" -RecoveryPoint $rp[0].Name -ItemLevelRecovery -RestoreType AlternateLocation -TargetResourceId $targetCrossSubscriptionStorageAccountId -ContainersList $backedUpContainers[0,1]
+Test-AzDataProtectionBackupInstanceRestore -Name $instance[0].Name -ResourceGroupName "resourceGroupName" -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -VaultName "vaultName" -RestoreRequest $restoreReqCSR
+$restoreJobCSR = Start-AzDataProtectionBackupInstanceRestore -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName" -BackupInstanceName $instance.BackupInstanceName -Parameter $restoreReqCSR
+```
+
+The first, second commands fetch the instance and recovery point for the instance.
+The third command fetches the containers which are protected with vaulted policy.
+The fourth command initializes the target cross subscription storage account Id.
+The fifth command initializes the restore request object for cross subscription AzureBlob restore.
+The sixth command triggers validate before restore.
+The last command triggers cross subscription restore for vaulted blob containers.
+
+### Example 7: Trigger cross subscription restore as files for AzureDatabaseForPostgreSQL.
+```powershell
+$instance = Get-AzDataProtectionBackupInstance -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName" | Where { $_.Property.DataSourceInfo.ResourceType -match "Postgre" }
+$rp = Get-AzDataProtectionRecoveryPoint -BackupInstanceName $instance[0].BackupInstanceName -ResourceGroupName "resourceGroupName" -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -VaultName "vaultName"
+$targetResourceArmId = "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/crossSubResourceGroupName/providers/Microsoft.Storage/storageAccounts/akneemasaecy/blobServices/default/containers/oss-csr-container"
+$targetContainerURI =  "https://akneemasaecy.blob.core.windows.net/oss-csr-container"
+$fileNamePrefix = "oss-csr-pstest-restoreasfiles"
+$ossRestoreReqFiles = Initialize-AzDataProtectionRestoreRequest -DatasourceType AzureDatabaseForPostgreSQL -SourceDataStore VaultStore -RestoreLocation "vaultLocation" -RestoreType RestoreAsFiles -RecoveryPoint $rp[0].Property.RecoveryPointId -TargetContainerURI $targetContainerURI -FileNamePrefix $fileNamePrefix -TargetResourceIdForRestoreAsFile $targetContainerArmId
+$validateRestore = Test-AzDataProtectionBackupInstanceRestore -Name $instance[0].Name -ResourceGroupName "resourceGroupName" -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -VaultName "vaultName" -RestoreRequest $ossRestoreReqFiles
+$restoreJobCSR = Start-AzDataProtectionBackupInstanceRestore -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName" -BackupInstanceName $instance.BackupInstanceName -Parameter $ossRestoreReqFiles
+$jobid = $restoreJobCSR.JobId.Split("/")[-1]
+$jobstatus = "InProgress"
+while($jobstatus -ne "Completed")
+{
+    Start-Sleep -Seconds 10
+    $currentjob = Get-AzDataProtectionJob -Id $jobid -SubscriptionId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -ResourceGroupName "resourceGroupName" -VaultName "vaultName"
+    $jobstatus = $currentjob.Status
+}
+```
+
+The first, second commands fetch the backup instance and recovery point for the backup instance.
+The third command initializes the ARM Id for target container.
+This parameter is needed for cross sub restore for AzureDatabaseForPostgreSQL and not needed for same susbscription restore.
+The fourth, fifth command initializes targetContainerURI and fileNamePrefix for restore.
+The sixth command initializes the restore request object for AzureDatabaseForPostgreSQL restore.
+The seventh command triggers validate before restore.
+The last command triggers the cross subscription restore as files for AzureDatabaseForPostgreSQL.
 
 ## PARAMETERS
 
@@ -158,6 +222,36 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IdentityDetailUserAssignedIdentityArmUrl
+ARM URL for User Assigned Identity.
+
+```yaml
+Type: System.String
+Parameter Sets: TriggerExpanded
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IdentityDetailUseSystemAssignedIdentity
+Specifies if the BI is protected by System Identity.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+Parameter Sets: TriggerExpanded
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -NoWait
 Run the command asynchronously
 
@@ -193,7 +287,7 @@ Azure backup restore request
 To construct, see NOTES section for PARAMETER properties and create a hash table.
 
 ```yaml
-Type: Microsoft.Azure.PowerShell.Cmdlets.DataProtection.Models.Api202301.IAzureBackupRestoreRequest
+Type: Microsoft.Azure.PowerShell.Cmdlets.DataProtection.Models.Api20230501.IAzureBackupRestoreRequest
 Parameter Sets: Trigger
 Aliases:
 
@@ -225,7 +319,7 @@ Gets or sets the restore target information.
 To construct, see NOTES section for RESTORETARGETINFO properties and create a hash table.
 
 ```yaml
-Type: Microsoft.Azure.PowerShell.Cmdlets.DataProtection.Models.Api202301.IRestoreTargetInfoBase
+Type: Microsoft.Azure.PowerShell.Cmdlets.DataProtection.Models.Api20230501.IRestoreTargetInfoBase
 Parameter Sets: TriggerExpanded
 Aliases:
 
@@ -333,11 +427,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### Microsoft.Azure.PowerShell.Cmdlets.DataProtection.Models.Api202301.IAzureBackupRestoreRequest
+### Microsoft.Azure.PowerShell.Cmdlets.DataProtection.Models.Api20230501.IAzureBackupRestoreRequest
 
 ## OUTPUTS
 
-### Microsoft.Azure.PowerShell.Cmdlets.DataProtection.Models.Api202301.IOperationJobExtendedInfo
+### Microsoft.Azure.PowerShell.Cmdlets.DataProtection.Models.Api20230501.IOperationJobExtendedInfo
 
 ## NOTES
 
@@ -354,6 +448,8 @@ To create the parameters described below, construct a hash table containing the 
     - `ObjectType <String>`: Type of Datasource object, used to initialize the right inherited type
     - `[RestoreLocation <String>]`: Target Restore region
   - `SourceDataStoreType <SourceDataStoreType>`: Gets or sets the type of the source data store.
+  - `[IdentityDetailUseSystemAssignedIdentity <Boolean?>]`: Specifies if the BI is protected by System Identity.
+  - `[IdentityDetailUserAssignedIdentityArmUrl <String>]`: ARM URL for User Assigned Identity.
   - `[SourceResourceId <String>]`: Fully qualified Azure Resource Manager ID of the datasource which is being recovered.
 
 `RESTORETARGETINFO <IRestoreTargetInfoBase>`: Gets or sets the restore target information.
